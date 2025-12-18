@@ -1,0 +1,33 @@
+# Optional dependencies for face recognition
+# Install these separately after core dependencies are installed
+# 
+# EASIEST METHOD: Run install_face_recognition.bat (Windows) or install_face_recognition.sh (Linux/Mac)
+#
+# MANUAL INSTALLATION:
+#
+# Windows - Method 1 (Recommended - Pre-built wheel):
+#   pip install dlib-binary
+#   pip install face-recognition
+#
+# Windows - Method 2 (Using conda):
+#   conda install -c conda-forge dlib
+#   pip install face-recognition
+#
+# Windows - Method 3 (From source):
+#   pip install cmake
+#   pip install dlib
+#   pip install face-recognition
+#
+# Linux/Mac:
+#   pip install cmake
+#   pip install dlib
+#   pip install face-recognition
+#
+# NOTE: Face replacement will work with OpenCV's built-in face detection even without
+#       face_recognition, but face_recognition provides better accuracy.
+#
+# For PyTorch (install based on your system):
+# CPU only: pip install torch torchvision
+# CUDA 11.8: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# CUDA 12.1: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+

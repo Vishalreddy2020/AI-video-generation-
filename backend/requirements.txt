@@ -1,0 +1,21 @@
+# Core dependencies (required)
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+opencv-python-headless>=4.9.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Optional: Face recognition (install separately if needed)
+# face-recognition==1.3.0
+# dlib==19.24.2
+
+# PyTorch - Universal (works on any laptop)
+# CPU version (works everywhere):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# 
+# For GPU acceleration (optional):
+#   NVIDIA: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#   Intel Arc: pip install intel-extension-for-pytorch
+#   Apple Silicon: Already included in PyTorch
+

@@ -1,0 +1,19 @@
+# Advanced AI Video Generation Dependencies
+# Install these for high-level AI video generation
+
+# For Replicate API (recommended - easiest to use)
+replicate>=0.25.0
+
+# For Stability AI API
+requests>=2.31.0
+
+# For local models (optional, requires GPU and large model files)
+# diffusers>=0.21.0
+# transformers>=4.35.0
+# accelerate>=0.24.0
+# xformers>=0.0.22  # For faster inference
+
+# Note: For true generative AI video, you need either:
+# 1. API keys for services like Replicate, Stability AI, RunwayML
+# 2. Or local models like Stable Video Diffusion (requires GPU and ~10GB+ VRAM)
+
