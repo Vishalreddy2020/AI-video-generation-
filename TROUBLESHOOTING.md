@@ -1,15 +1,10 @@
 # Troubleshooting Guide
 
-## "The link is not working" / Connection Issues
+## Connection Issues
 
-### Step 1: Check if Backend is Running
+### Backend Not Responding
 
 **Test the backend connection:**
-```bash
-python test_backend.py
-```
-
-Or manually test:
 ```bash
 curl http://localhost:8000/api/health
 ```
@@ -19,114 +14,156 @@ curl http://localhost:8000/api/health
 {"status": "healthy"}
 ```
 
-### Step 2: Check if Frontend is Running
+**If connection fails:**
+1. Verify backend is running: Check terminal where `python main.py` is running
+2. Check for error messages in backend terminal
+3. Verify port 8000 is not in use: `netstat -ano | findstr :8000` (Windows) or `lsof -i :8000` (Linux/Mac)
+4. Restart backend server
 
-Open browser console (F12) and check for errors.
+### Frontend Cannot Connect to Backend
 
-**Common errors:**
+**Symptoms:**
+- Frontend loads but shows "Cannot connect to backend" error
+- Network errors in browser console (F12)
 
-1. **"Network Error" or "ECONNREFUSED"**
-   - Backend is not running
-   - Solution: Start backend with `start_backend.bat` or `python backend/main.py`
+**Solutions:**
+1. Verify backend is running and accessible at http://localhost:8000/api/health
+2. Check CORS settings in `backend/main.py` - ensure frontend URL is in allowed origins
+3. Check browser console (F12) for specific error messages
+4. Verify both servers are running on correct ports
+5. Check firewall settings - ports 3000 and 8000 should be accessible
 
-2. **"CORS policy" error**
-   - Backend CORS settings issue
-   - Solution: Check `backend/main.py` CORS configuration
+### Port Already in Use
 
-3. **"Cannot GET /"**
-   - Frontend not running
-   - Solution: Start frontend with `start_frontend.bat` or `npm start`
+**Backend (port 8000):**
+- Find process using port: `netstat -ano | findstr :8000` (Windows)
+- Kill the process or change port in `backend/main.py` line 121
 
-### Step 3: Verify Both Servers Are Running
+**Frontend (port 3000):**
+- React will automatically use next available port (3001, 3002, etc.)
+- Or manually change in `frontend/package.json`
 
-**Backend should show:**
-```
-INFO:     Uvicorn running on http://0.0.0.0:8000
-```
+## Installation Issues
 
-**Frontend should show:**
-```
-Compiled successfully!
-You can now view ai-video-generator-frontend in the browser.
-  Local:            http://localhost:3000
-```
+### Setuptools/Build Errors
 
-### Step 4: Check Ports
+**Error:** "Cannot import 'setuptools.build_meta'" or "BackendUnavailable"
 
-**Backend Port (8000):**
+**Solution:**
 ```bash
-netstat -ano | findstr :8000
+cd backend
+venv\Scripts\activate  # Windows
+# or: source venv/bin/activate  # Linux/Mac
+python -m pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
 ```
 
-**Frontend Port (3000):**
+### Module Not Found Errors
+
+**Backend:**
 ```bash
-netstat -ano | findstr :3000
+cd backend
+venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-If ports are in use:
-- Backend: Change port in `backend/main.py` line 121
-- Frontend: React will auto-use next available port
+**Frontend:**
+```bash
+cd frontend
+npm install
+```
 
-### Step 5: Check Browser Console
+### dlib Installation Issues
 
-1. Open browser (Chrome/Firefox)
-2. Press F12 to open Developer Tools
-3. Go to Console tab
-4. Look for red error messages
-5. Check Network tab for failed requests
+**Windows - Method 1 (Easiest):**
+```bash
+pip install dlib-binary
+pip install face-recognition
+```
 
-### Common Issues and Solutions
+**Windows - Method 2 (Using conda):**
+```bash
+conda install -c conda-forge dlib
+pip install face-recognition
+```
 
-#### Issue: "Cannot connect to backend server"
+**Linux/Mac:**
+```bash
+pip install cmake
+pip install dlib
+pip install face-recognition
+```
 
-**Solution:**
-1. Make sure backend is running:
-   ```bash
-   cd backend
-   venv\Scripts\activate
-   python main.py
-   ```
+**Note:** Face replacement works without dlib using OpenCV's Haar Cascade detector.
 
-2. Check if backend started successfully (should see "Uvicorn running")
+### NumPy/OpenCV Compatibility Issues
 
-3. Test backend directly:
-   ```bash
-   curl http://localhost:8000/api/health
-   ```
+**Python 3.13+ users:**
+```bash
+pip install opencv-python-headless>=4.9.0
+pip install numpy>=1.24.0
+```
 
-#### Issue: Frontend shows error but backend seems running
+## Video Generation Issues
 
-**Solution:**
-1. Check CORS settings in `backend/main.py`
-2. Make sure frontend URL is in allowed origins
-3. Restart both servers
+### Video Generation Fails
 
-#### Issue: "Module not found" errors
+**Check:**
+1. Backend logs for error messages
+2. Sufficient disk space (videos are saved to `backend/outputs/`)
+3. FFmpeg is installed (optional but recommended)
+4. Input file format is supported (jpg, png, mp4, etc.)
 
-**Solution:**
-1. Backend: Run `setup.bat` again
-2. Frontend: Run `npm install` in frontend directory
+### Face Replacement Not Working
 
-#### Issue: Port already in use
+**If face detection fails:**
+1. Ensure face is clearly visible and front-facing
+2. Try installing face_recognition for better accuracy (see Installation Issues)
+3. Check that face image is in supported format (jpg, png)
+4. Verify sufficient lighting in images
 
-**Solution:**
-1. Find process using port:
-   ```bash
-   netstat -ano | findstr :8000
-   ```
-2. Kill the process or change port in code
+**Note:** Face replacement works without face_recognition using OpenCV's built-in detection, but with lower accuracy.
 
-### Quick Diagnostic Checklist
+### Out of Memory Errors
+
+**Solutions:**
+1. Close other applications to free up RAM
+2. Reduce video duration (use 5 seconds instead of 10)
+3. Use smaller input images
+4. If using GPU, reduce batch size in code
+
+## Performance Issues
+
+### Slow Video Generation
+
+**CPU Mode:**
+- Normal: 5-15 minutes per 5-second video
+- Consider using GPU for faster processing
+
+**GPU Mode:**
+- Should be 1-3 minutes per 5-second video
+- If slower, check GPU drivers are up to date
+
+### First Generation Takes Long Time
+
+**Normal behavior:**
+- Models download on first use (~4-8GB)
+- Subsequent generations will be faster
+- Models are cached for future use
+
+## Quick Diagnostic Checklist
 
 - [ ] Backend server is running (`python backend/main.py`)
 - [ ] Frontend server is running (`npm start` in frontend/)
 - [ ] Backend accessible at http://localhost:8000/api/health
 - [ ] Frontend accessible at http://localhost:3000
+- [ ] Virtual environment is activated for backend
+- [ ] All dependencies installed (check with `pip list` and `npm list`)
 - [ ] No firewall blocking ports 3000 and 8000
 - [ ] Browser console shows no CORS errors
-- [ ] Virtual environment is activated for backend
+- [ ] Sufficient disk space available
 
-### Still Not Working?
+## Still Not Working?
 
 1. **Check logs:**
    - Backend: Look at terminal where `python main.py` is running
@@ -152,8 +189,12 @@ If ports are in use:
 
 4. **Test with curl/Postman:**
    ```bash
-   curl -X POST http://localhost:8000/api/generate-video \
-     -F "text_prompt=test" \
-     -F "duration=5"
+   curl http://localhost:8000/api/health
    ```
 
+5. **Recreate virtual environment:**
+   ```bash
+   cd backend
+   rm -rf venv  # or rmdir /s venv on Windows
+   setup.bat  # or bash setup.sh
+   ```
