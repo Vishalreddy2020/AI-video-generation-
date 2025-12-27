@@ -19,3 +19,17 @@ Pillow>=10.0.0
 #   Intel Arc: pip install intel-extension-for-pytorch
 #   Apple Silicon: Already included in PyTorch
 
+# AI/ML dependencies (for image generation and video generation)
+diffusers>=0.21.0
+transformers>=4.35.0
+accelerate>=0.24.0
+safetensors>=0.4.0
+torch>=2.0.0
+torchvision>=0.15.0
+imageio>=2.31.0
+imageio-ffmpeg>=0.4.8
+
+# OpenVINO for Intel Arc optimization (optional but recommended)
+# Install with: pip install optimum[openvino]
+# Or: pip install openvino
+

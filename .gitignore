@@ -23,6 +23,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# Jupyter Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
 # Node
 node_modules/
 npm-debug.log*

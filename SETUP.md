@@ -117,6 +117,44 @@ This enables:
 
 Models will download automatically on first use (~4-8GB).
 
+## Optional: Intel Arc GPU Setup (OpenVINO)
+
+For Intel Arc GPU optimization (fastest path):
+
+**Install OpenVINO (Recommended):**
+```bash
+cd backend
+venv\Scripts\activate
+pip install optimum[openvino]
+```
+
+**Alternative (if OpenVINO not available):**
+```bash
+pip install diffusers transformers accelerate
+pip install intel-extension-for-pytorch
+```
+
+**Test Image Generation:**
+```bash
+# Start backend
+python main.py
+
+# Test endpoint (in another terminal)
+curl -X POST "http://localhost:8000/image/generate" \
+  -F "prompt=a cat wearing sunglasses" \
+  -F "width=512" \
+  -F "height=512" \
+  -o test_image.png
+```
+
+**Performance with Intel Arc + OpenVINO:**
+- First generation: 30-60 seconds (model loading)
+- Subsequent generations: 5-15 seconds per image
+
+**Performance with Intel Arc + Standard Diffusers:**
+- First generation: 1-2 minutes (model loading)
+- Subsequent generations: 10-30 seconds per image
+
 ## System Requirements
 
 **Minimum:**

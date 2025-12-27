@@ -1,7 +1,7 @@
 """
 Image Editing Service
-Edits images based on text prompts using Stable Diffusion Image-to-Image.
-The AI model automatically determines what to edit based on the prompt.
+Edits images based on text prompts using Stable Diffusion Inpainting (mask-based).
+Supports mask-based inpainting for precise editing.
 """
 import os
 import torch
@@ -13,7 +13,7 @@ import numpy as np
 class ImageEditingService:
     """
     Service for editing images based on text prompts.
-    Uses img2img pipeline - AI automatically determines what to edit.
+    Uses inpainting pipeline for mask-based editing.
     """
     
     def __init__(self):
@@ -40,20 +40,20 @@ class ImageEditingService:
         return "cpu"
     
     def _load_model(self):
-        """Load the image-to-image editing model."""
+        """Load the inpainting model."""
         if self.model_loaded:
             return True
         
         try:
-            from diffusers import StableDiffusionImg2ImgPipeline
+            from diffusers import StableDiffusionInpaintPipeline
             
-            print("Loading image-to-image editing model...")
+            print("Loading image inpainting model...")
             print("This may take a few minutes on first run (downloading ~4GB model)...")
             
             use_fp16 = self.device in ["cuda", "xpu", "mps"]
             
-            self.pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-                "runwayml/stable-diffusion-v1-5",
+            self.pipe = StableDiffusionInpaintPipeline.from_pretrained(
+                "runwayml/stable-diffusion-inpainting",
                 torch_dtype=torch.float16 if use_fp16 else torch.float32,
                 variant="fp16" if use_fp16 else None,
             )
@@ -90,20 +90,21 @@ class ImageEditingService:
         self,
         image: Image.Image,
         prompt: str,
+        mask: Optional[Image.Image] = None,
         strength: float = 0.75,
         num_inference_steps: int = 30,
         guidance_scale: float = 7.5
     ) -> Image.Image:
         """
-        Edit an image based on a text prompt.
-        The AI model automatically determines what parts of the image to edit based on the prompt.
+        Edit an image based on a text prompt with optional mask.
+        Uses mask-based inpainting for precise editing.
         
         Args:
             image: PIL Image to edit
-            prompt: Description of desired edits (e.g., "change the sky to sunset", "make it look like a painting")
+            prompt: Description of desired edits (e.g., "change the sky to sunset", "add flowers")
+            mask: Optional PIL Image mask (white areas will be edited, black areas preserved)
+                  If None, entire image will be edited
             strength: How strong the edit should be (0.0-1.0, default: 0.75)
-                      Lower values (0.3-0.5) = subtle changes, preserve more of original
-                      Higher values (0.7-0.9) = more dramatic changes
             num_inference_steps: Number of denoising steps (default: 30)
             guidance_scale: Guidance scale (default: 7.5)
         
@@ -117,22 +118,35 @@ class ImageEditingService:
         
         # Ensure image is RGB
         image = image.convert("RGB")
+        width, height = image.size
+        
+        # Create mask if not provided (edit entire image)
+        if mask is None:
+            mask_image = Image.new("L", (width, height), 255)  # White = edit area
+        else:
+            mask_image = mask.convert("L")
+            mask_image = mask_image.resize((width, height))
         
         # Ensure strength is in valid range
         strength = max(0.0, min(1.0, strength))
         
         print(f"Editing image with prompt: '{prompt}'")
-        print(f"Strength: {strength} (AI will automatically determine what to edit)")
+        if mask is None:
+            print("No mask provided - editing entire image")
+        else:
+            print("Using mask for selective editing")
+        print(f"Strength: {strength}")
+        
         if self.device == "cpu":
             print("Using CPU mode - this may take 1-3 minutes...")
             num_inference_steps = min(num_inference_steps, 20)  # Fewer steps on CPU
         
-        # Generate edited image using img2img
-        # The model will intelligently interpret the prompt and apply changes
+        # Generate edited image using inpainting
         with torch.no_grad():
             result = self.pipe(
                 prompt=prompt,
                 image=image,
+                mask_image=mask_image,
                 strength=strength,
                 num_inference_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
