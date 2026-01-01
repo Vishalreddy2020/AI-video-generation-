@@ -8,3 +8,5 @@ if not exist node_modules (
 echo Starting development server...
 call npm start
 
+
+

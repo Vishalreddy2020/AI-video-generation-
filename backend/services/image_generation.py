@@ -261,3 +261,5 @@ class ImageGenerationService:
         }
         return positions.get(position.lower(), positions["bottom_center"])
 
+
+
